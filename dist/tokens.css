@@ -1,0 +1,19 @@
+/* Generated from tokens.json by `mise run gen`. Do not edit. */
+:root {
+	--bg: #121a2b;
+	--text: #f4f5f7;
+	--text-muted: #a9afbb;
+	--accent: #e8a33d;
+	--bg-light: #ffffff;
+	--text-on-light: #121a2b;
+	--text-muted-on-light: #4a5466;
+	--font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+	--font-body: 'Sora', ui-sans-serif, system-ui, sans-serif;
+
+	--logo-navy: #121a2b;
+	--logo-white: #f4f5f7;
+	--logo-amber: #e8a33d;
+	--logo-mist: #a9afbb;
+	--logo-slate: #4a5466;
+	--logo-light: #ffffff;
+}

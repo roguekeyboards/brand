@@ -1,0 +1,14 @@
+Copyright (c) 2026 Jay. All rights reserved.
+
+The Rogue Keyboards name, logo, icons and other artwork in this repository -
+tokens.json, everything in dist/ and docs/, and the @roguekeyboards/brand npm
+package built from them - are not covered by the MIT license. They may be used
+to refer to Rogue Keyboards, and by Rogue Keyboards' own software, but not as
+the name or logo of anything else, and not in a way that implies Rogue
+Keyboards endorses or is connected with anything it isn't.
+
+The code that generates them is covered by the MIT license, in LICENSE-MIT.
+
+The fonts are not covered by either of the above. Sora is licensed under the
+SIL Open Font License 1.1. See fonts/OFL.txt for the fonts in fonts/, and
+sora-OFL.txt beside the web fonts in fonts/web/ and dist/fonts/.
