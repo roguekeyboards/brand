@@ -93,4 +93,4 @@ These don't update themselves:
 
 ## License
 
-The generator's code is [MIT](LICENSE-MIT). The name, logo and artwork aren't; see [`LICENSE`](LICENSE). The fonts are under the SIL Open Font License, with each license beside its fonts in [`fonts/`](fonts/).
+The generator's code is [MIT](LICENSE-MIT), except the logo designs in `src/logo.js`. The name, logo and artwork aren't; see [`LICENSE`](LICENSE). The fonts are under the SIL Open Font License, with each license beside its fonts in [`fonts/`](fonts/).
