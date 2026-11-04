@@ -18,6 +18,7 @@ import {
 import { encodePNG, ico } from './png.js';
 import { render } from './raster.js';
 import { svg } from './scene.js';
+import { LOGO, streamLogo } from './stream.js';
 import { parseTokens } from './tokens.js';
 
 // Paths within the repo.
@@ -28,6 +29,7 @@ export const FONT_FILES = {
 	extraLight: 'fonts/Sora-ExtraLight.ttf'
 };
 export const DIST_DIR = 'dist';
+export const HOLDING_TEMPLATE = 'src/holding.html';
 const WEB_FONTS_DIR = 'fonts/web';
 
 // The web fonts dist/fonts.css declares, with the weights each page can use.
@@ -38,6 +40,7 @@ export function readSources(root) {
 	const webFonts = join(root, WEB_FONTS_DIR);
 	return {
 		tokensJSON: readFileSync(join(root, TOKENS_FILE), 'utf8'),
+		holdingTemplate: readFileSync(join(root, HOLDING_TEMPLATE), 'utf8'),
 		fontData: Object.fromEntries(
 			Object.entries(FONT_FILES).map(([key, file]) => [key, readFileSync(join(root, file))])
 		),
@@ -46,7 +49,7 @@ export function readSources(root) {
 }
 
 /** Renders every asset. Returns a Map of path under dist/ to Buffer. */
-export function build({ tokensJSON, fontData, webFonts }) {
+export function build({ tokensJSON, holdingTemplate, fontData, webFonts }) {
 	const tokens = parseTokens(tokensJSON);
 	const c = coloursFrom(tokens.logo);
 	const fonts = Object.fromEntries(
@@ -56,6 +59,10 @@ export function build({ tokensJSON, fontData, webFonts }) {
 	const discord = tile(c, ICON_FRAC, 'Rogue Keyboards Discord avatar');
 	const twitch = banner(fonts, c, 1200, 480, 520, 'Rogue Keyboards Twitch profile banner');
 	const player = banner(fonts, c, 1920, 1080, 760, 'Rogue Keyboards Twitch video player banner');
+	const stream = {
+		logo: streamLogo(c, true, 'Rogue Keyboards'),
+		logoClear: streamLogo(c, false, 'Rogue Keyboards')
+	};
 	const scenes = {
 		wordmarkOnDark: wordmark(fonts, onDark(c)),
 		wordmarkOnLight: wordmark(fonts, onLight(c)),
@@ -73,7 +80,9 @@ export function build({ tokensJSON, fontData, webFonts }) {
 		'favicon.svg': favicon32(c),
 		'discord-avatar.svg': discord,
 		'twitch-banner.svg': twitch,
-		'twitch-player-banner.svg': player
+		'twitch-player-banner.svg': player,
+		'stream-logo.svg': stream.logo,
+		'stream-logo-clear.svg': stream.logoClear
 	};
 	for (const [name, scene] of Object.entries(svgs)) {
 		files.set(name, Buffer.from(svg(scene)));
@@ -91,7 +100,9 @@ export function build({ tokensJSON, fontData, webFonts }) {
 		['icon-512.png', appIcon, 512],
 		['discord-avatar.png', discord, 1024],
 		['twitch-banner.png', twitch, 1200],
-		['twitch-player-banner.png', player, 1920]
+		['twitch-player-banner.png', player, 1920],
+		['stream-logo.png', stream.logo, LOGO.size],
+		['stream-logo-clear.png', stream.logoClear, LOGO.size]
 	];
 	for (const [name, scene, px] of pngs) {
 		files.set(name, encodePNG(render(scene, px)));
@@ -103,11 +114,34 @@ export function build({ tokensJSON, fontData, webFonts }) {
 		ico(files.get('favicon-16.png'), files.get('favicon-32.png'), favicon48)
 	);
 
+	files.set(
+		'stream-holding.html',
+		Buffer.from(holdingPage(holdingTemplate, c, svg(scenes.wordmarkOnDark), webFonts))
+	);
+
 	files.set('fonts.css', Buffer.from(fontsCSS()));
 	for (const [name, data] of webFonts) {
 		files.set(`fonts/${name}`, data);
 	}
 	return files;
+}
+
+// The animated starting soon and be right back screens, an OBS Browser Source. It has to work as a
+// lone file, so the font and the wordmark go inside it.
+function holdingPage(template, c, wordmarkSVG, webFonts) {
+	const values = {
+		FONT: webFonts.get('sora-latin-300.woff2').toString('base64'),
+		WORDMARK: wordmarkSVG.trim().replace(/ width="[^"]*" height="[^"]*"/, ''), // the page sizes it
+		NAVY: c.navy,
+		WHITE: c.white,
+		AMBER: c.amber
+	};
+	return template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+		if (values[key] === undefined) {
+			throw new Error(`${HOLDING_TEMPLATE}: unknown placeholder {{${key}}}`);
+		}
+		return values[key];
+	});
 }
 
 // Declares the web fonts, with URLs relative to dist/fonts.css, so a bundler resolves them.

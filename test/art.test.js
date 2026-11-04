@@ -18,6 +18,7 @@ import {
 import { encodePNG, ico } from '../src/png.js';
 import { render } from '../src/raster.js';
 import { bounds, circle, circlePath, num, place, rect, ring, svg } from '../src/scene.js';
+import { LOGO, streamLogo } from '../src/stream.js';
 import { decodePNG, icoImages } from './png-decode.js';
 
 const root = join(import.meta.dirname, '..');
@@ -292,5 +293,28 @@ describe('logo', () => {
 		close(b.maxX - b.minX, 520, 'width');
 		close((b.minX + b.maxX) / 2, 600, 'x centre');
 		close((b.minY + b.maxY) / 2, 240, 'y centre');
+	});
+});
+
+describe('stream', () => {
+	const colours = {
+		navy: '#000000',
+		white: '#111111',
+		amber: '#222222',
+		mist: '#333333',
+		slate: '#444444',
+		light: '#555555'
+	};
+
+	it('centres the mark on the stream logo, the same with or without the tile', () => {
+		const tiled = streamLogo(colours, true, 'x');
+		const clear = streamLogo(colours, false, 'x');
+		assert.deepEqual([tiled.w, tiled.h], [LOGO.size, LOGO.size]);
+		assert.equal(tiled.items[0].fill, colours.navy);
+		assert.deepEqual(tiled.items.slice(1), clear.items);
+		const b = bounds(clear.items);
+		close((b.minX + b.maxX) / 2, LOGO.size / 2, 'x centre');
+		close((b.minY + b.maxY) / 2, LOGO.size / 2, 'y centre');
+		assert.equal(render(clear, LOGO.size).pix[3], 0, 'clear corner is transparent');
 	});
 });
