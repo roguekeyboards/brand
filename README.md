@@ -2,7 +2,7 @@
 
 Rogue Keyboards' logo, icons and design tokens, in one place so every site, app and social account uses the same artwork.
 
-- **Source of truth:** `tokens.json` (colours and font stacks), the designs in `src/logo.js` and the fonts in `fonts/`.
+- **Source of truth:** `tokens.json` (colours and font stacks), the designs in `src/logo.js` and `src/stream.js`, the animated holding screen in `src/holding.html` and the fonts in `fonts/`.
 - **Generated:** everything in `dist/`, by `mise run gen`. Never edit `dist/` by hand.
 - **npm:** `@roguekeyboards/brand` on GitHub Packages, published when a release is.
 - **Brand sheet:** [`docs/brand-sheet.pdf`](docs/brand-sheet.pdf), a one-page overview to share.
@@ -29,19 +29,21 @@ Mist is too faint on white and slate too faint on navy, so "keyboards" switches 
 
 ## Files
 
-| File                                                                        | Use                                                                                                          |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `wordmark-on-dark.svg` / `-on-light.svg`, and `.png` (1200 wide)            | The logo: headers, nav bars, documents. Transparent background.                                              |
-| `mark-on-dark.svg` / `-on-light.svg`, and `.png` (512)                      | The mark alone. Transparent background.                                                                      |
-| `favicon.svg`, `favicon.ico` (16/32/48), `favicon-16.png`, `favicon-32.png` | Browser tab icons, drawn on the pixel grid at 16 and 32                                                      |
-| `apple-touch-icon.png` (180)                                                | iOS home screen                                                                                              |
-| `icon-192.png`, `icon-512.png`                                              | Web app manifest                                                                                             |
-| `discord-avatar.png` / `.svg` (1024)                                        | Discord server or application icon. Discord crops it to a circle; the ring fits.                             |
-| `twitch-banner.png` / `.svg` (1200×480)                                     | Twitch profile banner                                                                                        |
-| `twitch-player-banner.png` / `.svg` (1920×1080)                             | Twitch video player banner, shown while offline                                                              |
-| `fonts.css`                                                                 | `@font-face` rules for Sora (200-600), latin subset                                                          |
-| `fonts/*.woff2`, `fonts/sora-OFL.txt`                                       | The fonts `fonts.css` loads and their license. Keep the license with the fonts.                              |
-| `tokens.css`                                                                | `tokens.json` as CSS custom properties: theme tokens as `--accent` etc., logo colours as `--logo-amber` etc. |
+| File                                                                        | Use                                                                                                                                        |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `wordmark-on-dark.svg` / `-on-light.svg`, and `.png` (1200 wide)            | The logo: headers, nav bars, documents. Transparent background.                                                                            |
+| `mark-on-dark.svg` / `-on-light.svg`, and `.png` (512)                      | The mark alone. Transparent background.                                                                                                    |
+| `favicon.svg`, `favicon.ico` (16/32/48), `favicon-16.png`, `favicon-32.png` | Browser tab icons, drawn on the pixel grid at 16 and 32                                                                                    |
+| `apple-touch-icon.png` (180)                                                | iOS home screen                                                                                                                            |
+| `icon-192.png`, `icon-512.png`                                              | Web app manifest                                                                                                                           |
+| `discord-avatar.png` / `.svg` (1024)                                        | Discord server or application icon. Discord crops it to a circle; the ring fits.                                                           |
+| `twitch-banner.png` / `.svg` (1200×480)                                     | Twitch profile banner                                                                                                                      |
+| `twitch-player-banner.png` / `.svg` (1920×1080)                             | Twitch video player banner, shown while offline                                                                                            |
+| `stream-holding.html`                                                       | Animated starting soon and be right back screens, for an OBS Browser Source. `?screen=brb` picks be right back; see the comment at the top |
+| `stream-logo.png` / `.svg` (128), `stream-logo-clear.png` / `.svg`          | The mark for an OBS image source over the live picture: on a rounded navy tile, or on transparent. Same mark size and place in both        |
+| `fonts.css`                                                                 | `@font-face` rules for Sora (200-600), latin subset                                                                                        |
+| `fonts/*.woff2`, `fonts/sora-OFL.txt`                                       | The fonts `fonts.css` loads and their license. Keep the license with the fonts.                                                            |
+| `tokens.css`                                                                | `tokens.json` as CSS custom properties: theme tokens as `--accent` etc., logo colours as `--logo-amber` etc.                               |
 
 In the SVGs the wordmark's text is converted to outlines, so they render the same without Sora installed.
 
@@ -74,7 +76,7 @@ import favicon from '@roguekeyboards/brand/favicon.svg';
 2. `mise run gen`, look at `dist/`, commit both.
 3. The PR needs a `feat` or `fix` title so merging leads to a release, which publishes the package.
 
-`mise run check-generated` compares `dist/`'s SVG and CSS files byte for byte. PNG and ICO bytes can vary with the zlib doing the compressing, so the tests compare those pixel by pixel instead.
+`mise run check-generated` compares `dist/`'s SVG, CSS and HTML files byte for byte. PNG and ICO bytes can vary with the zlib doing the compressing, so the tests compare those pixel by pixel instead.
 
 `docs/brand-sheet.pdf` isn't generated. Update it by hand when the logo or colours change.
 
@@ -85,6 +87,7 @@ These don't update themselves:
 - [ ] Discord icon: `discord-avatar.png`
 - [ ] Twitch profile banner: `twitch-banner.png`
 - [ ] Twitch video player banner: `twitch-player-banner.png`
+- [ ] OBS scenes using the `stream-*` files, if they point at a copy
 - [ ] `docs/brand-sheet.pdf`
 
 ## Fonts

@@ -56,10 +56,20 @@ describe('dist', () => {
 			'discord-avatar.png',
 			'twitch-banner.png',
 			'twitch-player-banner.png',
+			'stream-holding.html',
+			'stream-logo.png',
+			'stream-logo-clear.png',
 			'tokens.css'
 		]) {
 			assert.ok(built.has(name), name);
 		}
+	});
+
+	it('fills in every placeholder in the holding screen', () => {
+		const html = built.get('stream-holding.html').toString();
+		assert.doesNotMatch(html, /\{\{/);
+		assert.match(html, /base64,d09G/); // a woff2 file starts "wOF2"
+		assert.match(html, /<div class="wordmark"><svg /);
 	});
 
 	it('declares only web fonts it ships', () => {

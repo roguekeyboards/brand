@@ -5,7 +5,7 @@ npm run --silent gen
 
 # dist/'s images aren't compared here: their bytes can vary with the zlib doing the
 # compressing. The tests compare them pixel by pixel instead.
-if ! git diff --exit-code --stat -- 'dist/*.svg' 'dist/*.css'; then
+if ! git diff --exit-code --stat -- 'dist/*.svg' 'dist/*.css' 'dist/*.html'; then
   echo
   echo "dist/ is out of date - run mise run gen and commit the result." >&2
   exit 1
