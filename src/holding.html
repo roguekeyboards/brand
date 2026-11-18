@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Rogue Keyboards holding screen</title>
+		<!-- Generated from src/holding.html by `mise run gen`. Do not edit. -->
+		<!--
+  OBS Browser Source, 1920x1080. One page for every holding screen; pick the screen in the URL:
+    holding.html                  starting soon: types the words, holds them, erases them, repeats
+    holding.html?screen=brb       be right back: types the words once, then sits idle
+  Options: &text=... changes the words, &hold=8 sets the seconds starting soon's words stay up.
+-->
+		<style>
+			@font-face { font-family: 'Sora'; font-weight: 300; src: url(data:font/woff2;base64,{{FONT}}) format('woff2'); }
+			:root { --navy: {{NAVY}}; --white: {{WHITE}}; --amber: {{AMBER}}; }
+			html, body { margin: 0; height: 100%; background: var(--navy); overflow: hidden; }
+			/* Laid out at 1920x1080 and scaled to fit, so a browser preview matches OBS. */
+			.stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+			  transform: translate(-50%, -50%) scale(var(--fit, 1)); }
+			.line { position: absolute; top: 486px; left: 0; font: 300 132px/1 'Sora', sans-serif;
+			  letter-spacing: -1px; color: var(--white); white-space: pre; }
+			/* An 80s terminal block: a whole character cell, from the bottom of the descenders (g, p, y: -0.207em)
+			   to the top of the ascenders (b, d, k: 0.73em), measured from Sora Light, plus an overshoot:
+			   a solid block looks shorter than thin strokes of the same height, so it reaches 0.04em above the
+			   ascenders and 0.02em below the descenders to look level with them. */
+			.cursor { display: inline-block; width: 0.5em; height: 0.997em; margin-left: 0.08em; vertical-align: -0.227em;
+			  background: var(--amber); }
+			.cursor.blink { animation: blink var(--blink, 1.06s) steps(1) infinite; }
+			@keyframes blink { 50% { opacity: 0; } }
+			.wordmark { position: absolute; left: 50%; bottom: 88px; width: 370px; transform: translateX(-50%); }
+			.wordmark svg { display: block; width: 100%; height: auto; }
+		</style>
+	</head>
+	<body>
+		<div class="stage">
+			<div class="line"><span class="typed"></span><span class="cursor blink"></span></div>
+			<div class="wordmark">{{WORDMARK}}</div>
+		</div>
+		<script>
+			const params = new URLSearchParams(location.search);
+			const brb = params.get('screen') === 'brb';
+			const text = params.get('text') || (brb ? 'be right back' : 'starting soon');
+			const HOLD = Number(params.get('hold') || 8) * 1000; // ms the finished words stay up
+			const GAP = 900; // ms with an empty line before retyping
+
+			const stage = document.querySelector('.stage');
+			const line = document.querySelector('.line');
+			const typed = document.querySelector('.typed');
+			const cursor = document.querySelector('.cursor');
+			const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+			function fit() {
+				stage.style.setProperty('--fit', Math.min(innerWidth / 1920, innerHeight / 1080));
+			}
+			addEventListener('resize', fit);
+			fit();
+
+			// Anchor the line where the finished words are centred, so typing grows rightwards and nothing shifts.
+			function place() {
+				typed.textContent = text;
+				line.style.left = (1920 - line.offsetWidth) / 2 + 'px';
+				typed.textContent = '';
+			}
+
+			// The cursor holds steady while keys are going and blinks when idle, as in an editor.
+			function busy(on) {
+				cursor.classList.toggle('blink', !on);
+			}
+
+			// Every so often the wordmark's o, with its dots, spins once around its vertical axis, like a coin.
+			// It's drawn flat: the o narrows to a sliver and widens again, with no perspective. The o and its dots
+			// are symmetrical, so it lands exactly as it started.
+			// The wordmark is the plain SVG from dist/: its second path is the o, and its circles are the dots.
+			// Group them so they turn together, about the dots' centre, which is the o's.
+			const svg = document.querySelector('.wordmark svg');
+			const spin = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+			const o = svg.querySelectorAll('path')[1];
+			const dots = [...svg.querySelectorAll('circle')];
+			svg.insertBefore(spin, o);
+			spin.append(o, ...dots);
+			const xs = dots.map((d) => Number(d.getAttribute('cx')));
+			const AXIS = (Math.min(...xs) + Math.max(...xs)) / 2;
+			const SPIN_MS = 1400;
+			const SPIN_EVERY = 2; // typing cycles between spins
+			const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+			function spinO() {
+				const start = performance.now();
+				(function frame(now) {
+					const t = Math.min((now - start) / SPIN_MS, 1);
+					const sx = Math.cos(ease(t) * 2 * Math.PI);
+					spin.setAttribute(
+						'transform',
+						`translate(${AXIS} 0) scale(${sx} 1) translate(${-AXIS} 0)`
+					);
+					if (t < 1) requestAnimationFrame(frame);
+					else spin.removeAttribute('transform');
+				})(start);
+			}
+
+			// Be right back: type the words once and leave them. The cursor blinks slower, like a terminal nobody's
+			// at, and the o spins every 15 seconds as a sign of life.
+			const BRB_SPIN_EVERY = 15000;
+			async function typeOnce() {
+				await document.fonts.ready;
+				place();
+				document.documentElement.style.setProperty('--blink', '1.8s');
+				await wait(GAP);
+				busy(true);
+				for (const ch of text) {
+					typed.textContent += ch;
+					await wait(ch === ' ' ? 180 : 70 + Math.random() * 90);
+				}
+				busy(false);
+				setInterval(spinO, BRB_SPIN_EVERY);
+			}
+
+			async function loop() {
+				await document.fonts.ready;
+				place();
+				await wait(GAP);
+				for (let cycle = 1; ; cycle++) {
+					busy(true);
+					for (const ch of text) {
+						typed.textContent += ch;
+						await wait(ch === ' ' ? 180 : 70 + Math.random() * 90); // uneven, like a person typing
+					}
+					busy(false);
+					if (cycle % SPIN_EVERY === 0) setTimeout(spinO, 700); // a beat after the words land
+					await wait(HOLD);
+					busy(true);
+					while (typed.textContent) {
+						typed.textContent = typed.textContent.slice(0, -1);
+						await wait(35);
+					}
+					busy(false);
+					await wait(GAP);
+				}
+			}
+			if (brb) typeOnce();
+			else loop();
+		</script>
+	</body>
+</html>
